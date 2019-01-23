@@ -1,0 +1,16 @@
+{% extends "layout2.html" %}
+{% block title %}Request An Appointment{% endblock %}
+{% block body %}
+
+  <!-- REQUEST AN APPOINTMENT-->
+
+  <h2>Request An Appointment</h2>
+  {% if error %}<div class="error"><strong>Error:</strong> {{ error }}</div>{% endif %}
+  <form action="" method="post">
+    <dl>
+      <dt>Appointment:
+      <dd><input type="text" name="appointment" size="80" value="{{currapp}}" disabled>
+    </dl>
+    <div class="actions"><input type="submit" value="Submit"></div>
+  </form>
+{% endblock %}

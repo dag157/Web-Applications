@@ -1,0 +1,37 @@
+{% extends "layout2.html" %}
+{% block title %}
+  {% if request.endpoint == 'public_timeline' %}
+    Public Timeline
+  {% elif request.endpoint == 'user_timeline' %}
+    {{ profile_user.username }}'s Timeline
+  {% else %}
+    My Timeline
+  {% endif %}
+{% endblock %}
+{% block body %}
+{% if g.owner %}
+{% for stylist in workers %}
+
+  <!-- DISPLAYS LISTS A USERS -->
+
+  <li><img src="{{ stylist.username|gravatar(size=48) }}"><p>
+  <strong><a href="{{ url_for('user_timeline', username=stylist.username) }}">{{ stylist.username }}</a></strong>
+{% endfor %}
+{% endif %}
+{% if g.patron %}
+  {% for stylist in workers %}
+    <li><img src="{{ stylist.username|gravatar(size=48) }}"><p>
+    <strong><a href="{{ url_for('user_timeline', username=stylist.username) }}">{{ stylist.username }}</a></strong>
+    {% endfor %}
+    
+{% endif %}
+{% if g.stylist %}
+  
+<h1>Appointments</h1>
+
+{% for date in range(dates|length) %}       
+  <p> {{ dates[date].strftime("%A") + " " + dates[date].strftime("%B") + " " + dates[date].strftime("%d") + " " + dates[date].strftime("%Y") + " " + dates[date].strftime("%I") + " " + dates[date].strftime("%p") + " " + available[date] }} </p>
+{% endfor %}
+    
+{% endif %}
+{% endblock %}

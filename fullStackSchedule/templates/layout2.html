@@ -1,0 +1,41 @@
+<!doctype html>
+
+<!-- OUR MAIN LAYOUT WITH LINKS TO EVERYTHING-->
+
+<title>{% block title %}Welcome{% endblock %} | Treat Yo Self Salon</title>
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+<div class="page">
+  <h1>Treat Yo Self Salon</h1>
+  <div class="navigation">
+  {% if g.patron %}
+    <a href="{{ url_for('timeline') }}">Stylists</a> |
+    <a href="{{ url_for('user_timeline', username=g.patron.username) }}">Profile Page</a> |
+    <a href="{{ url_for('logout') }}">sign out [{{ g.patron.username }}]</a>
+  {% elif g.stylist %}
+    <a href="{{ url_for('timelineStyle') }}">my timeline</a> |
+    <a href="{{ url_for('logout') }}">sign out [{{ g.stylist.username }}]</a>
+  {% elif g.owner %}
+    <a href="{{ url_for('timeline') }}">Stylists</a> |
+    <a href="{{ url_for('registerStylist') }}">Register Stylist</a> |
+    <a href="{{ url_for('logout') }}">Sign out [{{ g.owner.username }}]</a>
+  {% else %}
+    <a href="{{ url_for('register') }}">sign up</a> |
+    <a href="{{ url_for('login') }}">sign in</a>
+  {% endif %}
+  </div>
+  {% with flashes = get_flashed_messages() %}
+    {% if flashes %}
+      <ul class="flashes">
+      {% for message in flashes %}
+        <li>{{ message }}
+      {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+  <div class="body">
+  {% block body %}{% endblock %}
+  </div>
+  <div class="footer">
+    Treat Yo Self Salon &mdash; A Flask Application
+  </div>
+</div>

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Box Office Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css')}}">
+</head>
+
+<body>
+    <h1>Box Office Dashboard</h1>
+
+    <div class='dashboard-grid'>
+        <div id='top-ten-movies'>
+            <h2>Top 10 Highest Grossing Films</h2>
+            <h4>Avg: <span id="gross-average"></span></h4>
+            <ol id="gross-movies">
+            </ol>
+        </div>
+
+        <div id='top-ten-movies-by-studio'>
+            <h2>Top 10 by <span id="studio-name">Studio</span>
+                <select id='studio-select'>
+                </select>
+            </h2>
+            <h4>Avg: <span id="studio-average"></span></h4>
+            <ol id='studio-movies'>
+            </ol>
+        </div>
+
+        <div id='top-ten-movies-by-opening-weekend'>
+            <h2>Top 10 by Opening Weekend Gross</h2>
+            <h4>Avg: <span id="opening-average"></span></h4>
+            <ol id="opening-movies">
+            </ol>
+        </div>
+
+        <div id='movie-list-complete'></div>
+    </div>
+    <script>
+        var movies;
+
+        // Helper function to format numbers with commas and '$'.
+        function formatNumbers(number, currency) {
+            if (number) {
+                number = number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                if (currency) {
+                    number = '$' + number;
+                }
+            }
+            return number
+        }
+
+        // Get the movies via AJAX from API collection once DOM Content is all loaded.
+        document.addEventListener('DOMContentLoaded', function() {
+            var request = new XMLHttpRequest();
+
+            request.onreadystatechange = function() {
+                if (request.readyState === XMLHttpRequest.DONE) {
+                    if (request.status === 200) {
+                        movies = JSON.parse(request.responseText);
+                        //console.log(movies)
+                        // Use a custom event to trigger the population of when
+                        // they are loaded.
+                        window.dispatchEvent(new Event('moviesLoaded'));
+                    }
+                }
+            }
+
+            request.open('GET', "{{ url_for('movies') }}");
+            request.send();
+        });
+
+        // Load the table of all movies.
+        var movieListDiv = document.getElementById('movie-list-complete')
+
+        // Custom event handler fired once movies are all loaded via AJAX.
+        window.addEventListener('moviesLoaded', function(e) {
+            var movieTable = document.createElement('table');
+            var header = document.createElement('tr');
+
+            var titleHead = document.createElement('th');
+            titleHead.textContent = 'Title';
+
+            var studioHead = document.createElement('th');
+            studioHead.textContent = 'Studio';
+
+            var totalGrossHead = document.createElement('th');
+            totalGrossHead.textContent = 'Total Gross';
+
+            var totalTheatersHead = document.createElement('th');
+            totalTheatersHead.textContent = 'Total Theaters';
+
+            var openingGrossHead = document.createElement('th');
+            openingGrossHead.textContent = 'Opening Gross';
+
+            var openingTheatersHead = document.createElement('th');
+            openingTheatersHead.textContent = 'Opening Theaters';
+
+            header.append(titleHead);
+            header.append(studioHead);
+            header.append(totalGrossHead);
+            header.append(totalTheatersHead);
+            header.append(openingGrossHead);
+            header.append(openingTheatersHead);
+            movieTable.append(header);
+
+            movies.forEach(function(item, idx, arr) {
+                var mRow = document.createElement('tr');
+                var mTitle = document.createElement('td');
+                var mStudio = document.createElement('td');
+                var mTotalGross = document.createElement('td');
+                var mTotalTheaters = document.createElement('td');
+                var mOpeningGross = document.createElement('td');
+                var mOpeningTheaters = document.createElement('td');
+
+                mTitle.textContent = item.title;
+                mStudio.textContent = item.studio;
+                mTotalGross.textContent = formatNumbers(item.total_gross, true);
+                mTotalTheaters.textContent = formatNumbers(item.total_theaters, false);
+                mOpeningGross.textContent = formatNumbers(item.opening_gross, true);
+                mOpeningTheaters.textContent = formatNumbers(item.opening_theaters, false);
+
+                mRow.append(mTitle);
+                mRow.append(mStudio);
+                mRow.append(mTotalGross);
+                mRow.append(mTotalTheaters);
+                mRow.append(mOpeningGross);
+                mRow.append(mOpeningTheaters);
+
+                movieTable.append(mRow);
+            });
+
+            movieListDiv.append(movieTable);
+
+            //Top Ten Grossing Title and Dollars
+            function compareGross(b,a) {
+                if (a.total_gross < b.total_gross)
+                    return -1;
+                if (a.total_gross > b.total_gross)
+                    return 1;
+                return 0;
+            }
+
+            topGrossing = movies.slice().sort(compareGross);
+            topGrossingDisplay = topGrossing.slice(0,10)
+
+            var tglist = document.getElementById("gross-movies");
+
+            topGrossingDisplay.forEach(function(item, idx, arr){
+                var li = document.createElement("li");
+                li.appendChild(document.createTextNode(item.title));
+                tglist.appendChild(li);
+            });
+
+            const topGrossingAvg2 = topGrossingDisplay.map(x => x.total_gross);
+
+            var avg_earnings = topGrossingAvg2.reduce((item, total) => item + total, 0) / topGrossingAvg2.length;
+
+            document.getElementById("gross-average").innerHTML = "$ " + avg_earnings;
+
+            //Top Ten Opening Grossing Title and Dollars
+
+            function compareOpeningGross(b,a) {
+                if (a.opening_gross < b.opening_gross)
+                    return -1;
+                if (a.opening_gross > b.opening_gross)
+                    return 1;
+                return 0;
+            }
+
+            topOpeningGrossing = movies.slice().sort(compareOpeningGross);
+            topOpeningGrossingDisplay = topOpeningGrossing.slice(0,10)
+
+            var toglist = document.getElementById("opening-movies");
+
+            topOpeningGrossingDisplay.forEach(function(item, idx, arr){
+                var lio = document.createElement("li");
+                lio.appendChild(document.createTextNode(item.title));
+                toglist.appendChild(lio);
+            });
+
+            const topOpeningGrossingAvg2 = topOpeningGrossingDisplay.map(x => x.opening_gross);
+
+            var avg_opening_earnings = topOpeningGrossingAvg2.reduce((item, total) => item + total, 0) / topOpeningGrossingAvg2.length;
+
+            document.getElementById("opening-average").innerHTML = "$ " + avg_opening_earnings;
+
+
+            //by studio 
+            const studiosFromList = movies.slice().map(x => x.studio);
+
+            studios = studiosFromList.slice().filter(function(item, pos) {
+                return studiosFromList.indexOf(item) == pos;
+            })
+
+            var selectList = document.getElementById("studio-select");
+
+            selectList.addEventListener('change', changeVals, false);
+
+            studios.forEach(function(item, idx, arr) {
+                var el = document.createElement("option");
+                el.textContent = item;
+                el.value = item;
+                selectList.appendChild(el);
+            });
+
+            //var e = document.getElementById("ddlViewBy");
+            var strUser = selectList.options[selectList.selectedIndex].value;
+
+            document.getElementById("studio-name").innerHTML = strUser;
+
+            const studioFilms = movies.slice().filter(x => x.studio == strUser);
+
+            topStudioGrossing = studioFilms.slice().sort(compareGross);
+            topStudioGrossingDisplay = topStudioGrossing.slice(0,10)
+
+            var tgslist = document.getElementById("studio-movies");
+
+            topStudioGrossingDisplay.forEach(function(item, idx, arr){
+                var li = document.createElement("li");
+                li.appendChild(document.createTextNode(item.title));
+                tgslist.appendChild(li);
+            });
+
+            const topStudioGrossingAvg2 = topStudioGrossingDisplay.map(x => x.total_gross);
+
+            var avg_studio_earnings = topStudioGrossingAvg2.reduce((item, total) => item + total, 0) / topStudioGrossingAvg2.length;
+
+            document.getElementById("studio-average").innerHTML = "$ " + avg_studio_earnings;
+
+            function changeVals(){
+                var strUser2 = selectList.options[selectList.selectedIndex].value;
+
+                document.getElementById("studio-name").innerHTML = strUser2;
+
+                const studioFilms2 = movies.slice().filter(x => x.studio == strUser2);
+
+                topStudioGrossing = studioFilms2.slice().sort(compareGross);
+                topStudioGrossingDisplay2 = topStudioGrossing.slice(0,10)
+
+                var tgslist2 = document.getElementById("studio-movies");
+
+                tgslist2.innerHTML = "";
+
+                topStudioGrossingDisplay2.forEach(function(item, idx, arr){
+                    var li = document.createElement("li");
+                    li.appendChild(document.createTextNode(item.title));
+                    tgslist2.appendChild(li);
+                });
+
+                const topStudioGrossingAvg3 = topStudioGrossingDisplay2.map(x => x.total_gross);
+
+                var avg_studio_earnings2 = topStudioGrossingAvg3.reduce((item, total) => item + total, 0) / topStudioGrossingAvg3.length;
+
+                document.getElementById("studio-average").innerHTML = "$ " + avg_studio_earnings2;
+
+            }
+
+
+        });
+    </script>
+</body>
+
+</html>

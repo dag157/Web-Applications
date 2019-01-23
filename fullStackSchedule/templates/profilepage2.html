@@ -1,0 +1,91 @@
+{% extends "layout2.html" %}
+{% block title %}
+  {% if g.owner %}
+    {{ profile_user.username }}'s Schedule 
+  {% else %}
+    {{ profile_user.username }}
+  {% endif %}
+{% endblock %}
+{% block body %}
+{% if g.owner %}
+
+{% if person == True %}
+
+    <!-- PROFILE PAGE -->
+
+    <h1>Patron {{ profile_user.username }}</h1>
+
+    {% if (dates|length) > 0 %}
+    {% for date in range(dates|length) %}
+        <!-- <p>{{ date }}</p> -->
+        <p> {{ dates[date].strftime("%A") + " " + dates[date].strftime("%B") + " " + dates[date].strftime("%d") + " " + dates[date].strftime("%Y") + " " + dates[date].strftime("%I") + " " + dates[date].strftime("%p") + " " + available[date] }}</p>
+        
+        
+    {% endfor %}
+    {% endif %}
+
+
+{% elif person == False %}
+
+    <h1>Stylist {{ profile_user.username }}</h1>
+
+    {% if allava == True %}
+        <h2>No Current Appointments</h2>
+    {% endif %}
+
+    {% for date in range(dates|length) %}   
+        {% if available[date] != "AVAILABLE" %}
+            <p> {{ dates[date].strftime("%A") + " " + dates[date].strftime("%B") + " " + dates[date].strftime("%d") + " " + dates[date].strftime("%Y") + " " + dates[date].strftime("%I") + " " + dates[date].strftime("%p") + "  " }}<a href="{{ url_for('user_timeline', username=available[date]) }}">{{ available[date] }}</a></p>
+        {% else %}
+            <p> {{ dates[date].strftime("%A") + " " + dates[date].strftime("%B") + " " + dates[date].strftime("%d") + " " + dates[date].strftime("%Y") + " " + dates[date].strftime("%I") + " " + dates[date].strftime("%p") + " " + available[date] }} </p>
+        {% endif %}
+    {% endfor %}
+
+    {% for date in range(dates|length) %}   
+           
+        <p> {{ dates[date].strftime("%A") + " " + dates[date].strftime("%B") + " " + dates[date].strftime("%d") + " " + dates[date].strftime("%Y") + " " + dates[date].strftime("%I") + " " + dates[date].strftime("%p") + "  " }}<a href="{{ url_for('user_timeline', username=available[date]) }}"></a>{{ available[date] }}</a></p>
+        
+    {% endfor %}
+
+{% endif %}
+{% endif %}
+
+{% if g.patron %}
+
+{% if person == False %}
+
+    <h1>Stylist {{ profile_user.username }}'s Availability </h1>
+
+    {% for date in range(dates|length) %}
+        <!-- <p>{{ date }}</p> -->
+        
+        {% if available[date] == False %}
+            
+            <p> {{ dates[date].strftime("%A") + " " + dates[date].strftime("%B") + " " + dates[date].strftime("%d") + " " + dates[date].strftime("%Y") + " " + dates[date].strftime("%I") + " " + dates[date].strftime("%p") }} BOOKED</p>
+            
+        {% else %}
+            <a href="{{ url_for('requestAppointments', appointment_date=dates[date], styname=profile_user.username) }}">
+            <p> {{ dates[date].strftime("%A") + " " + dates[date].strftime("%B") + " " + dates[date].strftime("%d") + " " + dates[date].strftime("%Y") + " " + dates[date].strftime("%I") + " " + dates[date].strftime("%p") }}</p>
+            </a>
+        {% endif %}
+    {% endfor %}
+
+
+{% elif person == True %}
+
+    <h1>My Appointments</h1>
+
+    {% if (dates|length) > 0 %}
+    {% for date in range(dates|length) %}
+        <!-- <p>{{ date }}</p> -->
+        <a href="{{ url_for('cancelAppointments', appointment_date=dates[date], styname=available[date]) }}">
+        <p> {{ dates[date].strftime("%A") + " " + dates[date].strftime("%B") + " " + dates[date].strftime("%d") + " " + dates[date].strftime("%Y") + " " + dates[date].strftime("%I") + " " + dates[date].strftime("%p") + " " + available[date] }}</p>
+        </a>
+        
+    {% endfor %}
+    {% endif %}
+{% endif %}
+
+{% endif %}
+
+{% endblock %}

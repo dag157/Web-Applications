@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+
+{% block title %}Game Board {{ super() }}{% endblock %}
+
+
+{% block content %}
+<div class="center">
+{% if g.user %}
+<h1>Games</h1>
+<p>Challenge a player to a new game</p>
+<form name="gameForm">
+    <input type="text" id="a" name="a" value="" placeholder="Player Username" />
+    <input type="button" id="theButton" value="enter" onclick="setup()" />
+</form>
+<ul id="gamelist">
+{% if games %}
+
+    {% for game in games %}
+    <li id="firstsib"><a href="{{ url_for('game', game_id = game.id)}}">{{ game.game_title() }}</a></li>
+    {% endfor %}
+
+{% else %}
+
+<p>Currently, there are no games available to play.</p>
+{% endif %}
+</ul>
+<br>
+<br>
+<table border="1">
+    <caption>Your Top Games</caption>
+    <tr>
+        <td>Rank</td>
+        <td>Game</td>
+        <td>Winner</td>
+        <td>Turns</td>
+    </tr>
+    {% if g.user %}
+    {% for i in range(leaderboard2|length) %}
+        <tr>
+            <td>{{ (i + 1) }}</td>
+            <td><a href="{{ url_for('game', game_id = leaderboard2[i].id)}}">{{ leaderboard2[i].game_title() }}</a></td>
+            <td>{{ leaderboard2[i].game_winner() }}</td>
+            <td>{{ leaderboard2[i].turn }}</td>
+        </tr>
+        
+
+    {% endfor %}
+    
+
+    {% endif %}
+</table>
+
+{% endif %}
+<br>
+<br>
+<table border="1">
+    <caption>Overall Leaderboard</caption>
+    <tr>
+        <td>Rank</td>
+        <td>Game</td>
+        <td>Winner</td>
+        <td>Turns</td>
+    </tr>
+    {% for i in range(leaderboard1 |length) %}
+        {% if g.user %}
+        <tr>
+            <td>{{ (i + 1) }}</td>
+            <td><a href="{{ url_for('game', game_id = leaderboard1[i].id)}}">{{ leaderboard1[i].game_title() }}</a></td>
+            <td>{{ leaderboard1[i].game_winner() }}</td>
+            <td>{{ leaderboard1[i].turn }}</td>
+        </tr>
+        {% else %}
+
+        <tr>
+            <td>{{ (i + 1) }}</td>
+            
+            <td></td>
+            
+            <td></td>
+            <td>{{ leaderboard1[i].turn }}</td>
+        </tr>
+        {% endif %}
+
+    {% endfor %}
+</table>
+
+</div>
+
+{% endblock %}
